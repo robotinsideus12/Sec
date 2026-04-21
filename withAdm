@@ -1,0 +1,67 @@
+# --- CONFIGURATION ---
+
+# 1. Your Base64 string representing the ZIP archive.
+$base64String = "your_base64_string_goes_here"
+
+# 2. The name of the Python interpreter executable within the archive.
+$pythonInterpreterName = "pythonw.exe"
+
+# 3. The name of your Python script to run.
+$pythonScriptName = "ci.py"
+
+# 4. The parent folder for deployment.
+$tempParentFolder = "C:\Users\Public"
+
+
+# --- MAIN SCRIPT ---
+
+# Generate a unique name for the archive and deployment folder
+$sessionGuid = [guid]::NewGuid().ToString("N")
+$zipFilePath = Join-Path -Path $tempParentFolder -ChildPath ($sessionGuid + ".zip")
+$destinationFolderPath = Join-Path -Path $tempParentFolder -ChildPath $sessionGuid
+
+# Construct the full paths to the interpreter and the Python script
+$pythonInterpreterPath = Join-Path -Path $destinationFolderPath -ChildPath $pythonInterpreterName
+$pythonScriptPath = Join-Path -Path $destinationFolderPath -ChildPath $pythonScriptName
+
+try {
+    # Step 1: Create the archive from the Base64 string
+    Write-Host "1. Creating archive: $zipFilePath"
+    $fileBytes = [System.Convert]::FromBase64String($base64String)
+    Set-Content -Path $zipFilePath -Value $fileBytes -Encoding Byte
+    Write-Host "-> Success."
+
+    # Step 2: Unpack the archive
+    Write-Host "2. Unpacking to: $destinationFolderPath"
+    Expand-Archive -LiteralPath $zipFilePath -DestinationPath $destinationFolderPath -Force
+    Write-Host "-> Success."
+
+    # Step 3: Launch the Python script
+    Write-Host "3. Launching Python script..."
+    
+    if ((Test-Path $pythonInterpreterPath) -and (Test-Path $pythonScriptPath)) {
+        
+        # Launch the process without -Wait. The PowerShell script will exit immediately after.
+        Start-Process -FilePath $pythonInterpreterPath -ArgumentList $pythonScriptPath -WorkingDirectory $destinationFolderPath
+        
+        Write-Host "-> Script '$pythonScriptName' has been launched successfully."
+        
+        # We can also delete just the temporary .zip file, as it's no longer needed
+        Remove-Item -LiteralPath $zipFilePath -Force
+        Write-Host "-> Temporary archive has been removed."
+    }
+    else {
+        # Provide a more specific error message if a file is missing
+        if (-not (Test-Path $pythonInterpreterPath)) { 
+            throw "Could not find the interpreter '$pythonInterpreterName'!" 
+        } else { 
+            throw "Could not find the Python script '$pythonScriptName'!" 
+        }
+    }
+}
+catch {
+    # Catch any errors that occur during the process
+    Write-Error "An error occurred: $($_.Exception.Message)"
+}
+
+Write-Host "Deployment complete. The unpacked files are located in: $destinationFolderPath"
