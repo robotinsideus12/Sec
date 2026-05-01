@@ -32,11 +32,15 @@ def main():
     shutil.move(str(source_zip), str(target_zip))
     print(f"Архив перемещен: {target_zip}")
 
-    # Распаковка архива в C:\Users\Public
-    with zipfile.ZipFile(target_zip, "r") as zf:
-        zf.extractall(target_dir)
+    # Папка для распаковки: C:\Users\Public\a
+    extract_dir = target_dir / "a"
+    extract_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Архив распакован в: {target_dir}")
+    # Распаковка архива в C:\Users\Public\a
+    with zipfile.ZipFile(target_zip, "r") as zf:
+        zf.extractall(extract_dir)
+
+    print(f"Архив распакован в: {extract_dir}")
 
 
 if __name__ == "__main__":
